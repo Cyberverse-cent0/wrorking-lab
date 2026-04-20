@@ -92,8 +92,9 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileSelect(files[0]);
     }
   };
 
@@ -172,7 +173,13 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
-        onDragOver={handleDrag}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!dragActive) {
+            setDragActive(true);
+          }
+        }}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
       >
@@ -222,10 +229,10 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
       {/* User info and instructions */}
       <div className="text-center space-y-1 max-w-xs">
         <p className="text-sm font-medium text-foreground">
-          {user?.name}
+          {user?.name || 'USER'}
         </p>
         <p className="text-xs text-muted-foreground">
-          {user?.email}
+          {user?.email || 'Not Found'}
         </p>
         <p className="text-xs text-muted-foreground pt-2">
           Upload a profile photo to personalize your account. This photo will be displayed throughout the platform.
