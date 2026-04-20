@@ -130,56 +130,72 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
     <div className="flex flex-col items-center space-y-4">
       <div className="relative group">
         <Avatar className="w-24 h-24">
-          <AvatarImage src={preview || ''} alt={user?.name} />
-          <AvatarFallback className="text-xl">
-            {user?.name?.charAt(0)?.toUpperCase()}
-          </AvatarFallback>
+          {preview ? (
+            <AvatarImage src={preview} alt={user?.name} />
+          ) : currentImage ? (
+            <AvatarImage src={currentImage} alt={user?.name} />
+          ) : (
+            <AvatarFallback className="text-xl">
+              {user?.name?.charAt(0)?.toUpperCase()}
+            </AvatarFallback>
+          )}
         </Avatar>
         
         {/* Upload overlay */}
-        <div className="absolute inset-0 w-24 h-24 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-             onClick={() => fileInputRef.current?.click()}>
-          <Camera className="w-6 h-6 text-white" />
-        </div>
-
-        {/* Loading indicator */}
-        {isUploading && (
-          <div className="absolute inset-0 w-24 h-24 rounded-full bg-black/50 flex items-center justify-center">
+        <div 
+          className="absolute inset-0 w-24 h-24 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {isUploading ? (
             <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
+          ) : (
+            <Camera className="w-6 h-6 text-white" />
+          )}
+        </div>
       </div>
 
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/png, image/jpeg, image/jpg, image/gif"
         onChange={handleFileInputChange}
         className="hidden"
       />
 
       {/* Drag and drop area */}
       <div
-        className={`w-full max-w-xs border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-          dragActive ? 'border-primary bg-primary/5' : 'border-border'
+        className={`w-full max-w-xs border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+          dragActive 
+            ? 'border-primary bg-primary/10 scale-105' 
+            : 'border-border hover:border-primary/50 hover:bg-muted/50'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
       >
-        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground mb-2">
-          Drag & drop your photo here, or click to browse
-        </p>
-        <p className="text-xs text-muted-foreground">
-          PNG, JPG, GIF up to 5MB
-        </p>
+        {isUploading ? (
+          <div className="flex flex-col items-center space-y-2">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm text-muted-foreground">Uploading...</p>
+          </div>
+        ) : (
+          <>
+            <Upload className={`w-8 h-8 mb-3 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className="text-sm font-medium text-foreground mb-2">
+              Drag & drop your photo here, or click to browse
+            </p>
+            <p className="text-xs text-muted-foreground">
+              PNG, JPG, GIF up to 5MB
+            </p>
+          </>
+        )}
       </div>
 
       {/* Action buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-center">
         <Button
           variant="outline"
           size="sm"
@@ -190,7 +206,7 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
           Choose Photo
         </Button>
         
-        {preview && (
+        {(preview || currentImage) && (
           <Button
             variant="outline"
             size="sm"
@@ -203,9 +219,17 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
         )}
       </div>
 
-      {/* Instructions */}
-      <div className="text-xs text-muted-foreground text-center max-w-xs">
-        <p>Upload a profile photo to personalize your account. This photo will be displayed throughout the platform.</p>
+      {/* User info and instructions */}
+      <div className="text-center space-y-1 max-w-xs">
+        <p className="text-sm font-medium text-foreground">
+          {user?.name}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {user?.email}
+        </p>
+        <p className="text-xs text-muted-foreground pt-2">
+          Upload a profile photo to personalize your account. This photo will be displayed throughout the platform.
+        </p>
       </div>
     </div>
   );
