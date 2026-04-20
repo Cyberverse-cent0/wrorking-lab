@@ -2,9 +2,9 @@
 > @workspace/api-server@0.0.0 start /home/codecrafter/Documents/Go-Auth-Service/artifacts/api-server
 > node --enable-source-maps ./dist/index.mjs
 
-[22:05:23.960] [32mINFO[39m (104927): [36mServer listening[39m
+[23:38:03.952] [32mINFO[39m (131363): [36mServer listening[39m
     [35mport[39m: 5000
-[22:05:24.732] [32mINFO[39m (104927): [36mrequest completed[39m
+[23:38:04.382] [32mINFO[39m (131363): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 1,
       "method": "GET",
@@ -13,8 +13,8 @@
     [35mres[39m: {
       "statusCode": 404
     }
-    [35mresponseTime[39m: 8
-[22:05:33.916] [32mINFO[39m (104927): [36mrequest completed[39m
+    [35mresponseTime[39m: 7
+[23:38:08.522] [32mINFO[39m (131363): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 2,
       "method": "POST",
@@ -23,24 +23,14 @@
     [35mres[39m: {
       "statusCode": 200
     }
-    [35mresponseTime[39m: 156
-[22:05:44.764] [32mINFO[39m (104927): [36mrequest completed[39m
+    [35mresponseTime[39m: 161
+[23:38:14.260] [32mINFO[39m (131363): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 3,
-      "method": "POST",
-      "url": "/api/users/Te7oUNQuaYj-9cUHUgIDp/profile-photo"
-    }
-    [35mres[39m: {
-      "statusCode": 200
-    }
-    [35mresponseTime[39m: 77
-[22:05:55.189] [32mINFO[39m (104927): [36mrequest completed[39m
-    [35mreq[39m: {
-      "id": 4,
       "method": "GET",
-      "url": "/api/users/Te7oUNQuaYj-9cUHUgIDp"
+      "url": "/api/projects/popular"
     }
     [35mres[39m: {
       "statusCode": 200
     }
-    [35mresponseTime[39m: 4
+    [35mresponseTime[39m: 15

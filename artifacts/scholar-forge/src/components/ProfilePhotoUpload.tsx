@@ -44,11 +44,45 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
     setIsUploading(true);
     
     try {
+      console.log('Starting upload for file:', file.name, 'size:', file.size, 'type:', file.type);
+      
+      // First test API connectivity
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const uploadUrl = `${apiUrl}/users/${user?.id}/profile-photo`;
+      
+      console.log('Upload URL:', uploadUrl);
+      console.log('Token available:', !!token);
+      console.log('User ID:', user?.id);
+      
+      // Test basic connectivity first
+      try {
+        const testResponse = await fetch(`${apiUrl}/auth/me`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log('API connectivity test - status:', testResponse.status);
+        if (testResponse.ok) {
+          const userData = await testResponse.json();
+          console.log('API connectivity test - user data:', userData);
+        } else {
+          console.error('API connectivity test failed:', testResponse.status);
+        }
+      } catch (testError) {
+        console.error('API connectivity test error:', testError);
+      }
+      
       const formData = new FormData();
       formData.append('image', file);
       
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-      const response = await fetch(`${apiUrl}/users/${user?.id}/profile-photo`, {
+      console.log('FormData created, appending file...');
+      console.log('FormData entries:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+      
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
         headers: {
@@ -56,19 +90,30 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
         },
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        console.error('Upload error response:', errorData);
+        throw new Error(errorData.error || `Upload failed with status ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('Upload success:', result);
 
       if (result.imageUrl) {
         onImageUpdate(result.imageUrl);
         setPreview(result.imageUrl);
+        console.log('Profile photo uploaded successfully:', result.imageUrl);
       }
     } catch (error: any) {
       console.error('Failed to upload profile photo:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       alert(`Failed to upload profile photo: ${error.message || 'Please try again.'}`);
       // Reset preview on error
       setPreview(currentImage || null);

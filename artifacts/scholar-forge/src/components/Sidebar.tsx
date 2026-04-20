@@ -1,14 +1,15 @@
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, FolderOpen, Search, Plus, User, Shield, LogOut,
-  BookOpen, ChevronLeft, ChevronRight, Menu, X
+  BookOpen, ChevronLeft, ChevronRight, Menu, X, TrendingUp, Users
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useQuery } from "@/hooks/useApi";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -21,6 +22,12 @@ export function Sidebar() {
   const [location] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Fetch popular projects
+  const { data: popularProjects, loading: loadingPopular } = useQuery<any[]>(
+    "/api/projects/popular",
+    []
+  );
 
   // Check if user can create projects
   const canCreateProject = user && ["SCHOLAR", "ORGANIZATION", "ADMIN"].includes(user.role);
@@ -120,6 +127,46 @@ export function Sidebar() {
           </Link>
         )}
       </nav>
+
+      {/* Popular Projects */}
+      {!collapsed && (
+        <div className="border-t border-sidebar-border p-3">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-4 h-4 text-sidebar-foreground/70" />
+            <span className="text-xs font-medium text-sidebar-foreground/70">Popular Projects</span>
+          </div>
+          <div className="space-y-1">
+            {loadingPopular ? (
+              <div className="flex items-center justify-center py-2">
+                <div className="w-3 h-3 border border-sidebar-foreground/30 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : popularProjects && popularProjects.length > 0 ? (
+              popularProjects.slice(0, 10).map((project) => (
+                <Link
+                  key={project.id}
+                  to={`/projects/${project.id}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="block group"
+                >
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-sm text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium">{project.title}</p>
+                      <div className="flex items-center gap-1 text-sidebar-foreground/50">
+                        <Users className="w-3 h-3" />
+                        <span>{project.memberCount || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p className="text-xs text-sidebar-foreground/50 text-center py-2">
+                No popular projects yet
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* User info + logout */}
       <div className="border-t border-sidebar-border p-3">
