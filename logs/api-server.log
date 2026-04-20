@@ -2,9 +2,9 @@
 > @workspace/api-server@0.0.0 start /home/codecrafter/Documents/Go-Auth-Service/artifacts/api-server
 > node --enable-source-maps ./dist/index.mjs
 
-[23:38:03.952] [32mINFO[39m (131363): [36mServer listening[39m
+[23:49:17.502] [32mINFO[39m (136586): [36mServer listening[39m
     [35mport[39m: 5000
-[23:38:04.382] [32mINFO[39m (131363): [36mrequest completed[39m
+[23:49:17.526] [32mINFO[39m (136586): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 1,
       "method": "GET",
@@ -14,7 +14,7 @@
       "statusCode": 404
     }
     [35mresponseTime[39m: 7
-[23:38:08.522] [32mINFO[39m (131363): [36mrequest completed[39m
+[23:49:24.957] [32mINFO[39m (136586): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 2,
       "method": "POST",
@@ -23,14 +23,44 @@
     [35mres[39m: {
       "statusCode": 200
     }
-    [35mresponseTime[39m: 161
-[23:38:14.260] [32mINFO[39m (131363): [36mrequest completed[39m
+    [35mresponseTime[39m: 135
+[23:49:29.683] [32mINFO[39m (136586): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 3,
       "method": "GET",
-      "url": "/api/projects/popular"
+      "url": "/api/auth/me"
     }
     [35mres[39m: {
       "statusCode": 200
     }
-    [35mresponseTime[39m: 15
+    [35mresponseTime[39m: 16
+[23:50:43.698] [32mINFO[39m (136586): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 4,
+      "method": "POST",
+      "url": "/api/auth/signup"
+    }
+    [35mres[39m: {
+      "statusCode": 201
+    }
+    [35mresponseTime[39m: 166
+[23:50:49.836] [32mINFO[39m (136586): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 5,
+      "method": "GET",
+      "url": "/api/auth/me"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 2
+[23:50:56.159] [32mINFO[39m (136586): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 6,
+      "method": "PATCH",
+      "url": "/api/users/YFlfBKrBwEmnVm8F-OMlP"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 65

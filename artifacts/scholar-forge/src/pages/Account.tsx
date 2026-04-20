@@ -89,7 +89,11 @@ export default function Account() {
           <div className="flex flex-col items-center space-y-4">
             <ProfilePhotoUpload 
               currentImage={user?.image} 
-              onImageUpdate={(imageUrl) => updateUser({ ...user!, image: imageUrl })}
+              onImageUpdate={(imageUrl) => {
+                if (user) {
+                  updateUser({ ...user, image: imageUrl });
+                }
+              }}
             />
             <div className="text-center">
               <CardTitle className="text-base">{user?.name}</CardTitle>

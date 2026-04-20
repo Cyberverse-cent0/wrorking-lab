@@ -12,6 +12,10 @@ import messagesRouter from "./messages";
 import activityRouter from "./activity";
 import analyticsRouter from "./analytics";
 import adminRouter from "./admin";
+import projectRoomsRouter from "./project-rooms";
+import roomMessagesRouter from "./room-messages";
+import roomFilesRouter from "./room-files";
+import projectBlogRouter from "./project-blog";
 
 const router: IRouter = Router();
 
@@ -28,5 +32,9 @@ router.use(messagesRouter);
 router.use(activityRouter);
 router.use(analyticsRouter);
 router.use(adminRouter);
+router.use(projectRoomsRouter);
+router.use(roomMessagesRouter);
+router.use(roomFilesRouter);
+router.use(projectBlogRouter);
 
 export default router;

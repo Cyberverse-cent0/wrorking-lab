@@ -46,33 +46,13 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
     try {
       console.log('Starting upload for file:', file.name, 'size:', file.size, 'type:', file.type);
       
-      // First test API connectivity
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
       const uploadUrl = `${apiUrl}/users/${user?.id}/profile-photo`;
       
       console.log('Upload URL:', uploadUrl);
-      console.log('Token available:', !!token);
       console.log('User ID:', user?.id);
       
-      // Test basic connectivity first
-      try {
-        const testResponse = await fetch(`${apiUrl}/auth/me`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        console.log('API connectivity test - status:', testResponse.status);
-        if (testResponse.ok) {
-          const userData = await testResponse.json();
-          console.log('API connectivity test - user data:', userData);
-        } else {
-          console.error('API connectivity test failed:', testResponse.status);
-        }
-      } catch (testError) {
-        console.error('API connectivity test error:', testError);
-      }
-      
+      // Create FormData
       const formData = new FormData();
       formData.append('image', file);
       
@@ -82,27 +62,16 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
         console.log(pair[0], pair[1]);
       }
       
-      const response = await fetch(uploadUrl, {
+      // Use apiFetch for proper authentication
+      const result = await apiFetch<{imageUrl: string}>(uploadUrl, {
         method: 'POST',
         body: formData,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        // Don't set Content-Type header for FormData - let browser set it with boundary
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Upload error response:', errorData);
-        throw new Error(errorData.error || `Upload failed with status ${response.status}`);
-      }
-
-      const result = await response.json();
       console.log('Upload success:', result);
 
-      if (result.imageUrl) {
+      if (result?.imageUrl) {
         onImageUpdate(result.imageUrl);
         setPreview(result.imageUrl);
         console.log('Profile photo uploaded successfully:', result.imageUrl);
@@ -152,17 +121,11 @@ export function ProfilePhotoUpload({ currentImage, onImageUpdate }: ProfilePhoto
   const removePhoto = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-      const response = await fetch(`${apiUrl}/users/${user?.id}/profile-photo`, {
+      const deleteUrl = `${apiUrl}/users/${user?.id}/profile-photo`;
+      
+      await apiFetch(deleteUrl, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Delete failed');
-      }
 
       onImageUpdate('');
       setPreview(null);

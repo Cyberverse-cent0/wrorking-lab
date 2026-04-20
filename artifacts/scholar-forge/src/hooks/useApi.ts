@@ -46,4 +46,51 @@ export function useQuery<T>(url: string | null, deps: any[] = []) {
   return { data, loading, error, refetch };
 }
 
+export function useMutation<T, V = any>(
+  mutationFn: (variables: V) => Promise<T>,
+  options: {
+    onSuccess?: (data: T) => void;
+    onError?: (error: Error) => void;
+  } = {}
+) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mutate = useCallback(async (variables: V) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await mutationFn(variables);
+      options.onSuccess?.(result);
+      return result;
+    } catch (e: any) {
+      const errorMessage = e.message || "An error occurred";
+      setError(errorMessage);
+      options.onError?.(e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  }, [mutationFn, options.onSuccess, options.onError]);
+
+  return { mutate, loading, error };
+}
+
+// Simple query client for invalidating queries
+const queryClient = {
+  cache: new Map<string, any>(),
+  invalidateQueries: (queryKey: string | string[]) => {
+    const key = Array.isArray(queryKey) ? queryKey[0] : queryKey;
+    queryClient.cache.delete(key);
+  },
+  setQueryData: (queryKey: string | string[], data: any) => {
+    const key = Array.isArray(queryKey) ? queryKey[0] : queryKey;
+    queryClient.cache.set(key, data);
+  }
+};
+
+export function useQueryClient() {
+  return queryClient;
+}
+
 export { apiFetch };

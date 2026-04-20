@@ -7,3 +7,4 @@ export * from "./milestones";
 export * from "./files";
 export * from "./messages";
 export * from "./activity";
+export * from "./project-collaboration";

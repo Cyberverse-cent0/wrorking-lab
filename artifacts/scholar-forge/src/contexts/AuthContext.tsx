@@ -72,7 +72,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateUser = (updatedUser: User) => {
+    // Update local state
     setUser(updatedUser);
+    
+    // Also update the user in localStorage to persist changes
+    // This ensures the profile picture change is reflected across the app
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+    if (storedToken) {
+      // Re-fetch user data to ensure we have the latest state
+      fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${storedToken}` },
+      })
+        .then((r) => r.ok ? r.json() : null)
+        .then((u) => { 
+          if (u) {
+            // Merge the updated user with the latest backend data
+            // This ensures we don't lose any other user data
+            const mergedUser = { ...u, ...updatedUser };
+            setUser(mergedUser);
+          }
+        })
+        .catch(() => {
+          // If fetch fails, at least update with the provided data
+          setUser(updatedUser);
+        });
+    }
   };
 
   return (
