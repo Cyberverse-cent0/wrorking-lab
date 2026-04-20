@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/hooks/useApi";
 import { Badge } from "@/components/ui/badge";
+import { ProfilePhotoUpload } from "@/components/ProfilePhotoUpload";
 
 export default function Account() {
   const { user, updateUser } = useAuth();
@@ -59,7 +60,7 @@ export default function Account() {
     setPasswordError("");
     setPasswordSuccess(false);
     try {
-      await apiFetch("/api/auth/change-password", {
+      await apiFetch("/api/users/change-password", {
         method: "POST",
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
@@ -85,13 +86,14 @@ export default function Account() {
       {/* Profile Card */}
       <Card className="border-border">
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-lg font-semibold text-primary">{user?.name?.charAt(0)}</span>
-            </div>
-            <div>
+          <div className="flex flex-col items-center space-y-4">
+            <ProfilePhotoUpload 
+              currentImage={user?.image} 
+              onImageUpdate={(imageUrl) => updateUser({ ...user!, image: imageUrl })}
+            />
+            <div className="text-center">
               <CardTitle className="text-base">{user?.name}</CardTitle>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5 justify-center">
                 <span className="text-xs text-muted-foreground">{user?.email}</span>
                 <Badge variant="secondary" className="text-xs">{user?.role}</Badge>
               </div>

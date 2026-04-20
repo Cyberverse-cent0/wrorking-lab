@@ -1,31 +1,10 @@
 
-> @workspace/api-server@0.0.0 dev /home/codecrafter/Documents/Go-Auth-Service/artifacts/api-server
-> export NODE_ENV=development && pnpm run build && pnpm run start
-
-
-> @workspace/api-server@0.0.0 build /home/codecrafter/Documents/Go-Auth-Service/artifacts/api-server
-> node ./build.mjs
-
-
-  dist/index.mjs                       2.4mb ⚠️
-  dist/pino-worker.mjs               153.4kb
-  dist/pino-file.mjs                 142.1kb
-  dist/pino-pretty.mjs               114.6kb
-  dist/thread-stream-worker.mjs        7.3kb
-  dist/index.mjs.map                   4.2mb
-  dist/pino-worker.mjs.map           256.9kb
-  dist/pino-file.mjs.map             229.1kb
-  dist/pino-pretty.mjs.map           203.9kb
-  dist/thread-stream-worker.mjs.map   12.0kb
-
-⚡ Done in 482ms
-
 > @workspace/api-server@0.0.0 start /home/codecrafter/Documents/Go-Auth-Service/artifacts/api-server
 > node --enable-source-maps ./dist/index.mjs
 
-[13:09:25.514] [32mINFO[39m (165772): [36mServer listening[39m
+[22:05:23.960] [32mINFO[39m (104927): [36mServer listening[39m
     [35mport[39m: 5000
-[13:09:26.218] [32mINFO[39m (165772): [36mrequest completed[39m
+[22:05:24.732] [32mINFO[39m (104927): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 1,
       "method": "GET",
@@ -34,8 +13,8 @@
     [35mres[39m: {
       "statusCode": 404
     }
-    [35mresponseTime[39m: 7
-[13:09:35.368] [32mINFO[39m (165772): [36mrequest completed[39m
+    [35mresponseTime[39m: 8
+[22:05:33.916] [32mINFO[39m (104927): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 2,
       "method": "POST",
@@ -44,14 +23,24 @@
     [35mres[39m: {
       "statusCode": 200
     }
-    [35mresponseTime[39m: 161
-[13:09:46.783] [32mINFO[39m (165772): [36mrequest completed[39m
+    [35mresponseTime[39m: 156
+[22:05:44.764] [32mINFO[39m (104927): [36mrequest completed[39m
     [35mreq[39m: {
       "id": 3,
       "method": "POST",
-      "url": "/api/projects"
+      "url": "/api/users/Te7oUNQuaYj-9cUHUgIDp/profile-photo"
     }
     [35mres[39m: {
-      "statusCode": 201
+      "statusCode": 200
     }
-    [35mresponseTime[39m: 48
+    [35mresponseTime[39m: 77
+[22:05:55.189] [32mINFO[39m (104927): [36mrequest completed[39m
+    [35mreq[39m: {
+      "id": 4,
+      "method": "GET",
+      "url": "/api/users/Te7oUNQuaYj-9cUHUgIDp"
+    }
+    [35mres[39m: {
+      "statusCode": 200
+    }
+    [35mresponseTime[39m: 4

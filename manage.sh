@@ -203,7 +203,11 @@ start_services() {
     # Start API server
     log "Starting API server..."
     cd "$API_SERVER_DIR"
-    DATABASE_URL="$DATABASE_URL" PORT="$API_PORT" npx pnpm run dev > "$LOG_DIR/api-server.log" 2>&1 &
+    # Load environment variables from .env file
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+        export $(cat "$PROJECT_ROOT/.env" | grep -v '^#' | xargs)
+    fi
+    DATABASE_URL="$DATABASE_URL" PORT="$API_PORT" npx pnpm run start > "$LOG_DIR/api-server.log" 2>&1 &
     local api_pid=$!
     echo "$api_pid" > "$PID_FILE.api"
     

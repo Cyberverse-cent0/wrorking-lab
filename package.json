@@ -12,5 +12,21 @@
   "devDependencies": {
     "typescript": "~5.9.2",
     "prettier": "^3.8.1"
-  }
+  },
+  "description": "ScholarForge is a comprehensive research collaboration platform designed for scholars to create, manage, and collaborate on research projects. Built as a modern monorepo architecture with React, Express, and PostgreSQL, it provides all the tools needed for effective research team management.",
+  "main": "proxy-server.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cyberverse-cent0/wrorking-lab.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Cyberverse-cent0/wrorking-lab/issues"
+  },
+  "homepage": "https://github.com/Cyberverse-cent0/wrorking-lab#readme"
 }

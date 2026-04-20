@@ -46,35 +46,116 @@ async function getProjectWithUserRole(projectId: string, userId?: string) {
 
 router.get("/projects", requireAuth, async (req, res): Promise<void> => {
   const user = getCurrentUser(req);
-  const { visibility, status, search, myProjects } = req.query as {
+  const { 
+    visibility, 
+    status, 
+    search, 
+    myProjects, 
+    sortBy = "updatedAt", 
+    sortOrder = "desc",
+    keywords,
+    limit
+  } = req.query as {
     visibility?: string;
     status?: string;
     search?: string;
     myProjects?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    keywords?: string;
+    limit?: string;
   };
 
-  let projects = await db.select().from(projectsTable).orderBy(projectsTable.updatedAt);
-
+  // Build base query
+  let query = db.select().from(projectsTable);
+  
+  // Apply visibility and membership filters
   if (myProjects === "true") {
     const memberships = await db.select().from(projectMembersTable).where(eq(projectMembersTable.userId, user.id));
     const projectIds = memberships.map(m => m.projectId);
-    projects = projects.filter(p => projectIds.includes(p.id));
+    query = query.where(inArray(projectsTable.id, projectIds));
   } else {
     // Public or member's projects
     const memberships = await db.select().from(projectMembersTable).where(eq(projectMembersTable.userId, user.id));
     const memberProjectIds = memberships.map(m => m.projectId);
-    projects = projects.filter(p => p.visibility === "PUBLIC" || memberProjectIds.includes(p.id));
-  }
-
-  if (visibility) projects = projects.filter(p => p.visibility === visibility);
-  if (status) projects = projects.filter(p => p.status === status);
-  if (search) {
-    projects = projects.filter(p =>
-      p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.description.toLowerCase().includes(search.toLowerCase()) ||
-      (p.keywords || []).some(k => k.toLowerCase().includes(search.toLowerCase()))
+    query = query.where(
+      or(
+        eq(projectsTable.visibility, "PUBLIC"),
+        inArray(projectsTable.id, memberProjectIds)
+      )
     );
   }
+
+  // Apply additional filters
+  const conditions = [];
+  if (visibility && visibility !== "all") {
+    conditions.push(eq(projectsTable.visibility, visibility));
+  }
+  if (status && status !== "all") {
+    conditions.push(eq(projectsTable.status, status));
+  }
+  if (search) {
+    conditions.push(
+      or(
+        ilike(projectsTable.title, `%${search}%`),
+        ilike(projectsTable.description, `%${search}%`),
+        ilike(projectsTable.abstract, `%${search}%`),
+        sql`${projectsTable.keywords}::text ILIKE ${`%${search}%`}`
+      )
+    );
+  }
+  if (keywords) {
+    const keywordList = keywords.split(",").map(k => k.trim()).filter(k => k);
+    if (keywordList.length > 0) {
+      conditions.push(
+        sql`${projectsTable.keywords}::text ILIKE ANY(${keywordList.map(k => `%${k}%`)})`
+      );
+    }
+  }
+
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
+  }
+
+  // Apply sorting
+  let orderField = projectsTable.updatedAt;
+  if (sortBy === "createdAt") orderField = projectsTable.createdAt;
+  else if (sortBy === "title") orderField = projectsTable.title;
+  else if (sortBy === "memberCount") {
+    // For member count sorting, we'll need to join and count
+    const projects = await query.leftJoin(projectMembersTable, eq(projectsTable.id, projectMembersTable.projectId))
+      .groupBy(projectsTable.id)
+      .orderBy(sql`count(${projectMembersTable.userId}) ${sql.raw(sortOrder.toUpperCase())}`)
+      .limit(limit ? parseInt(limit) : 100);
+    
+    const memberships = await db.select().from(projectMembersTable).where(eq(projectMembersTable.userId, user.id));
+    const memberProjectIds = new Map(memberships.map(m => [m.projectId, m.role]));
+
+    const results = await Promise.all(projects.map(async (p) => {
+      const project = p.projects;
+      const [{ mc }] = await db.select({ mc: count() }).from(projectMembersTable).where(eq(projectMembersTable.projectId, project.id));
+      const [{ tc }] = await db.select({ tc: count() }).from(tasksTable).where(eq(tasksTable.projectId, project.id));
+      return {
+        ...project,
+        memberCount: Number(mc),
+        taskCount: Number(tc),
+        currentUserRole: memberProjectIds.get(project.id) ?? null,
+      };
+    }));
+
+    res.json(results);
+    return;
+  }
+
+  // Apply regular sorting
+  query = query.orderBy(sql`${orderField} ${sql.raw(sortOrder.toUpperCase())}`);
+  
+  // Apply limit
+  if (limit) {
+    query = query.limit(parseInt(limit));
+  }
+
+  const projects = await query.limit(100);
 
   const memberships = await db.select().from(projectMembersTable).where(eq(projectMembersTable.userId, user.id));
   const memberProjectIds = new Map(memberships.map(m => [m.projectId, m.role]));
@@ -97,9 +178,9 @@ router.post("/projects", requireAuth, async (req, res): Promise<void> => {
   const user = getCurrentUser(req);
   const { title, description, abstract, keywords, status, visibility, startDate, endDate } = req.body;
 
-  // Check if user has permission to create projects (SCHOLAR, ORGANIZATION, or ADMIN only)
-  if (!["SCHOLAR", "ORGANIZATION", "ADMIN"].includes(user.role)) {
-    res.status(403).json({ error: "Only scholars, organizations, and admins can create projects" });
+  // Check if user has permission to create projects (ADMIN only)
+  if (user.role !== "ADMIN") {
+    res.status(403).json({ error: "Only administrators can create projects" });
     return;
   }
 

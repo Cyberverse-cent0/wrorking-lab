@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { apiFetch } from "@/hooks/useApi";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CreateProject() {
   const [, navigate] = useLocation();
+  const { user } = useAuth();
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -21,6 +23,40 @@ export default function CreateProject() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Check if user is admin, if not redirect to projects
+  useEffect(() => {
+    if (user && user.role !== "ADMIN") {
+      navigate("/projects");
+    }
+  }, [user, navigate]);
+
+  // Don't render anything if user is not admin
+  if (!user || user.role !== "ADMIN") {
+    return (
+      <div className="max-w-2xl mx-auto space-y-5">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/projects")} className="gap-2">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Button>
+        </div>
+        <Card className="border-border">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Shield className="w-12 h-12 text-muted-foreground/30 mb-4" />
+              <h3 className="text-lg font-medium text-foreground">Access Restricted</h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Only administrators can create projects.
+              </p>
+              <Button className="mt-4" onClick={() => navigate("/projects")}>
+                Back to Projects
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

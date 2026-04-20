@@ -2,10 +2,13 @@ import { useState } from "react";
 import { X, User, Upload, Building, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "wouter";
 
 export default function ProfilePopup() {
   const { user, setShowProfilePopup } = useAuth();
+  const [, navigate] = useLocation();
   const [isVisible, setIsVisible] = useState(true);
 
   const handleClose = () => {
@@ -16,7 +19,7 @@ export default function ProfilePopup() {
   const goToProfile = () => {
     setIsVisible(false);
     setShowProfilePopup(false);
-    window.location.href = "/account";
+    navigate("/account");
   };
 
   if (!isVisible || !user) return null;
@@ -37,8 +40,13 @@ export default function ProfilePopup() {
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <span className="text-2xl font-bold text-primary">{user?.name?.charAt(0)}</span>
+            <div className="w-16 h-16 mx-auto mb-4">
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={user?.image || ''} alt={user?.name} />
+                <AvatarFallback className="text-xl">
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
             <h3 className="font-semibold text-foreground">Hi, {user?.name}!</h3>
             <p className="text-sm text-muted-foreground">

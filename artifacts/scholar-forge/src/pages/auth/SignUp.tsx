@@ -118,7 +118,7 @@ export default function SignUp() {
             <CardDescription>Create your research workspace account</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
               {error && (
                 <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -127,22 +127,53 @@ export default function SignUp() {
               )}
               <div className="space-y-1.5">
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" placeholder="Dr. Jane Smith" value={name} onChange={(e) => setName(e.target.value)} required data-testid="input-name" />
+                <Input 
+                  id="name" 
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="Dr. Jane Smith" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  required 
+                  data-testid="input-name" 
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="you@university.edu" value={email} onChange={(e) => setEmail(e.target.value)} required data-testid="input-email" />
+                <Input 
+                  id="email" 
+                  name="email"
+                  type="email" 
+                  autoComplete="username"
+                  placeholder="you@university.edu" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  data-testid="input-email" 
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="institution">Institution <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                <Input id="institution" placeholder="MIT" value={institution} onChange={(e) => setInstitution(e.target.value)} data-testid="input-institution" />
+                <Input 
+                  id="institution" 
+                  name="institution"
+                  type="text"
+                  autoComplete="organization"
+                  placeholder="MIT" 
+                  value={institution} 
+                  onChange={(e) => setInstitution(e.target.value)} 
+                  data-testid="input-institution" 
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
+                    name="password"
                     type={showPass ? "text" : "password"}
+                    autoComplete="new-password"
                     placeholder="Min. 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -150,7 +181,12 @@ export default function SignUp() {
                     className="pr-10"
                     data-testid="input-password"
                   />
-                  <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPass(!showPass)} 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                  >
                     {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>

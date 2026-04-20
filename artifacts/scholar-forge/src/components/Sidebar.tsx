@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -124,11 +125,12 @@ export function Sidebar() {
       <div className="border-t border-sidebar-border p-3">
         {!collapsed ? (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-sidebar-primary/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-semibold text-sidebar-primary">
+            <Avatar className="w-8 h-8 flex-shrink-0">
+              <AvatarImage src={user?.image || ''} alt={user?.name} />
+              <AvatarFallback className="text-xs font-semibold">
                 {user?.name?.charAt(0).toUpperCase()}
-              </span>
-            </div>
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-sidebar-foreground truncate">{user?.name}</p>
               <p className="text-xs text-sidebar-foreground/50 truncate">{user?.role}</p>
@@ -142,12 +144,21 @@ export function Sidebar() {
             </button>
           </div>
         ) : (
-          <button
-            onClick={logout}
-            className="w-full flex justify-center p-2 rounded-md text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex flex-col items-center gap-2">
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={user?.image || ''} alt={user?.name} />
+              <AvatarFallback className="text-xs font-semibold">
+                {user?.name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <button
+              onClick={logout}
+              className="p-2 rounded-md text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+              data-testid="button-logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         )}
       </div>
     </div>

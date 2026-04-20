@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
-import { ArrowLeft, Settings, Users, Globe, Lock, Plus } from "lucide-react";
+import { ArrowLeft, Settings, Users, Globe, Lock, Plus, Calendar, MessageSquare, Activity, Share2, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +8,8 @@ import { useQuery } from "@/hooks/useApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { getStatusColor } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { formatDate } from "@/lib/utils";
 import { ProjectOverview } from "./tabs/ProjectOverview";
 import { ProjectTasks } from "./tabs/ProjectTasks";
 import { ProjectMilestones } from "./tabs/ProjectMilestones";
