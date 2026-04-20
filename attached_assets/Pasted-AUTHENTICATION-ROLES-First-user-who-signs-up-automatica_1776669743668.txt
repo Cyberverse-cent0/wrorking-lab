@@ -1,0 +1,81 @@
+AUTHENTICATION & ROLES
+
+First user who signs up automatically becomes ADMIN (or hard-code one admin email for testing).
+All other users = USER role.
+Only ADMIN can access the Admin Panel.
+
+PAGES & ROUTES (App Router)
+
+/ → Public landing page (hero, features, "Get Started")
+/projects → Browse all PUBLIC projects (search + filters)
+/auth/signin and /auth/signup
+/dashboard → Main dashboard after login (with Sidebar)
+/projects/create
+/projects/[id] → Single project page (details, team, files, tasks, milestones, activity, real-time chat)
+/account → Account Management (edit profile, change password, etc.)
+/admin → Full Admin Panel (only visible to ADMIN)
+
+SIDEBAR (left navigation – visible only when logged in)
+
+Dashboard
+My Projects
+Discover Projects
+Create New Project (prominent button)
+Account Management
+Admin Panel (only for ADMIN)
+Logout
+
+FEATURES TO IMPLEMENT (make them complete and polished)
+
+Project Creation
+Creator automatically becomes LEAD.
+Fields: title, description, abstract, keywords, status, visibility, dates.
+
+Project Dashboard (inside /projects/[id])
+Tabs: Overview, Team, Files, Tasks, Milestones, Activity Log, Chat
+Lead can invite collaborators by email (Invitation system with accept link)
+Lead can change member roles or remove members
+
+Real-time Chat (in the Chat tab)
+Only team members can see and send messages
+Messages saved in database + live updates with Socket.io
+Shows who is typing and online status
+File sharing inside chat (optional)
+
+Admin Panel (/admin)
+User Management (list, edit, change role to ADMIN, ban, delete)
+All Projects Management (view, edit, delete ANY project, change lead)
+Platform Analytics (total users, total projects, active projects, etc.)
+Moderate invitations and files
+
+Account Management
+Edit name, institution, research interests, bio, avatar
+Change password
+
+Public Browse Page
+Search by keywords, filter by status, visibility, etc.
+Beautiful project cards
+
+
+UI / UX REQUIREMENTS
+
+Modern, clean, academic/professional look (use shadcn/ui)
+Dark + Light mode toggle
+Excellent mobile experience
+Loading skeletons, toast notifications, proper error handling
+Responsive sidebar (collapsible on mobile)
+Beautiful project cards and tables
+Use Lucide icons
+
+ADDITIONAL REQUIREMENTS
+
+Full TypeScript with strict mode
+Proper environment variables setup (show .env.example)
+Seed script with 3-4 demo users and projects
+Secure: protect all private routes with middleware
+Beautiful landing page with clear value proposition
+Make the entire app feel professional and ready to deploy
+Add helpful comments in code
+
+Start by creating the project structure, install all dependencies, set up Prisma and database, then implement authentication, then the sidebar + dashboard, then projects and real-time chat, and finally the admin panel. Build everything step by step and test as you go. When finished, the app should be fully functional and deployable with one click.
+Begin now.

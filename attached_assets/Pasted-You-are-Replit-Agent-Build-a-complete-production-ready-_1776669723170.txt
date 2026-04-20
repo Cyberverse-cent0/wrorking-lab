@@ -1,0 +1,201 @@
+You are Replit Agent. Build a complete, production-ready full-stack web application called **ScholarForge** – a neutral research collaboration platform where scholars can create, manage, and collaborate on research projects.
+
+### TECH STACK (use exactly this)
+- Next.js 15 (App Router) with TypeScript
+- Tailwind CSS + shadcn/ui components (modern, clean design)
+- Prisma ORM + PostgreSQL (use Replit's built-in PostgreSQL database)
+- Authentication: NextAuth.js v5 (email/password + Google OAuth)
+- Real-time chat: Socket.io (server + client)
+- State management: Zustand
+- File uploads: Use Replit App Storage or Cloudinary (free tier)
+- Dark/Light mode (with system preference)
+- Fully responsive and mobile-first
+
+### CORE CONCEPT
+- Anyone can sign up and sign in.
+- No personal branding or info about any specific person (completely neutral platform).
+- The user who creates a project automatically becomes the **Lead / Main Contributor**.
+- Leads can invite collaborators by email.
+- There is one Super Admin role that has full control.
+
+### DATABASE SCHEMA (Prisma – create prisma/schema.prisma exactly like this)
+
+```prisma
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  institution   String?
+  researchInterests String?
+  bio           String?
+  role          Role     @default(USER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  projectsLed      ProjectMember[] @relation("LedProjects")
+  projectsMember   ProjectMember[] @relation("MemberProjects")
+  sentInvitations  Invitation[]    @relation("SentInvitations")
+  receivedInvitations Invitation[] @relation("ReceivedInvitations")
+  messages         ChatMessage[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  abstract    String?
+  keywords    String[] // array of strings
+  status      ProjectStatus @default(DRAFT)
+  visibility  Visibility @default(PRIVATE)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     ProjectMember[]
+  files       ProjectFile[]
+  tasks       Task[]
+  milestones  Milestone[]
+  messages    ChatMessage[]
+  activities  ActivityLog[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id         String     @id @default(cuid())
+  userId     String
+  projectId  String
+  role       MemberRole @default(CONTRIBUTOR) // LEAD, CO_LEAD, CONTRIBUTOR, VIEWER
+  joinedAt   DateTime   @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  project    Project    @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+model Invitation {
+  id         String   @id @default(cuid())
+  email      String
+  projectId  String
+  invitedById String
+  status     InvitationStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+
+  project    Project  @relation(fields: [projectId], references: [id])
+  invitedBy  User     @relation("SentInvitations", fields: [invitedById], references: [id])
+
+  @@map("invitations")
+}
+
+model ProjectFile {
+  id          String   @id @default(cuid())
+  projectId   String
+  filename    String
+  fileUrl     String
+  uploadedById String
+  uploadedAt  DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id])
+  uploadedBy  User     @relation(fields: [uploadedById], references: [id])
+
+  @@map("project_files")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  assignedToId String?
+  dueDate     DateTime?
+
+  project     Project    @relation(fields: [projectId], references: [id])
+  assignedTo  User?      @relation(fields: [assignedToId], references: [id])
+
+  @@map("tasks")
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  dueDate     DateTime
+  completed   Boolean  @default(false)
+
+  project     Project  @relation(fields: [projectId], references: [id])
+
+  @@map("milestones")
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  projectId   String
+  userId      String
+  message     String
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("chat_messages")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  projectId   String
+  userId      String
+  action      String   // e.g. "created project", "added collaborator", "uploaded file"
+  details     String?
+  createdAt   DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  ONGOING
+  COMPLETED
+  SEEKING_COLLABORATORS
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  INVITE_ONLY
+}
+
+enum MemberRole {
+  LEAD
+  CO_LEAD
+  CONTRIBUTOR
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}

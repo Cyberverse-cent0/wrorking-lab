@@ -1,0 +1,1560 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: ScholarForge API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User operations
+  - name: projects
+    description: Project operations
+  - name: members
+    description: Project member operations
+  - name: tasks
+    description: Task operations
+  - name: milestones
+    description: Milestone operations
+  - name: files
+    description: File operations
+  - name: messages
+    description: Chat message operations
+  - name: invitations
+    description: Invitation operations
+  - name: activity
+    description: Activity log operations
+  - name: admin
+    description: Admin operations
+  - name: analytics
+    description: Analytics/stats operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # Auth
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Create a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupBody"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/signin:
+    post:
+      operationId: signin
+      tags: [auth]
+      summary: Sign in with email/password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninBody"
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/signout:
+    post:
+      operationId: signout
+      tags: [auth]
+      summary: Sign out current user
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Users
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin only)
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: role
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{userId}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user by ID
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user profile
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user (admin only)
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: User deleted
+
+  /users/{userId}/role:
+    patch:
+      operationId: updateUserRole
+      tags: [users]
+      summary: Update user role (admin only)
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRoleBody"
+      responses:
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/change-password:
+    post:
+      operationId: changePassword
+      tags: [users]
+      summary: Change own password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordBody"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Invalid current password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # Projects
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List projects (public or member-accessible)
+      parameters:
+        - in: query
+          name: visibility
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: myProjects
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectSummary"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project by ID
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectBody"
+      responses:
+        "200":
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Project deleted
+
+  # Project Members
+  /projects/{projectId}/members:
+    get:
+      operationId: listProjectMembers
+      tags: [members]
+      summary: List project members
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectMember"
+
+  /projects/{projectId}/members/{memberId}:
+    patch:
+      operationId: updateProjectMember
+      tags: [members]
+      summary: Update member role
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: memberId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMemberBody"
+      responses:
+        "200":
+          description: Member updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectMember"
+    delete:
+      operationId: removeProjectMember
+      tags: [members]
+      summary: Remove member from project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: memberId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Member removed
+
+  # Invitations
+  /projects/{projectId}/invitations:
+    post:
+      operationId: createInvitation
+      tags: [invitations]
+      summary: Invite a collaborator by email
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInvitationBody"
+      responses:
+        "201":
+          description: Invitation sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+    get:
+      operationId: listInvitations
+      tags: [invitations]
+      summary: List invitations for a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invitation"
+
+  /invitations/{invitationId}/accept:
+    post:
+      operationId: acceptInvitation
+      tags: [invitations]
+      summary: Accept an invitation
+      parameters:
+        - in: path
+          name: invitationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /invitations/{invitationId}/decline:
+    post:
+      operationId: declineInvitation
+      tags: [invitations]
+      summary: Decline an invitation
+      parameters:
+        - in: path
+          name: invitationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invitation declined
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /invitations/my:
+    get:
+      operationId: getMyInvitations
+      tags: [invitations]
+      summary: Get invitations for current user
+      responses:
+        "200":
+          description: Pending invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invitation"
+
+  # Tasks
+  /projects/{projectId}/tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List tasks for a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /projects/{projectId}/tasks/{taskId}:
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskBody"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Task deleted
+
+  # Milestones
+  /projects/{projectId}/milestones:
+    get:
+      operationId: listMilestones
+      tags: [milestones]
+      summary: List milestones for a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of milestones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Milestone"
+    post:
+      operationId: createMilestone
+      tags: [milestones]
+      summary: Create a milestone
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMilestoneBody"
+      responses:
+        "201":
+          description: Milestone created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+
+  /projects/{projectId}/milestones/{milestoneId}:
+    patch:
+      operationId: updateMilestone
+      tags: [milestones]
+      summary: Update a milestone
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: milestoneId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMilestoneBody"
+      responses:
+        "200":
+          description: Milestone updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+    delete:
+      operationId: deleteMilestone
+      tags: [milestones]
+      summary: Delete a milestone
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: milestoneId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Milestone deleted
+
+  # Files
+  /projects/{projectId}/files:
+    get:
+      operationId: listFiles
+      tags: [files]
+      summary: List files for a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectFile"
+    post:
+      operationId: uploadFile
+      tags: [files]
+      summary: Upload a file to a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadFileBody"
+      responses:
+        "201":
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectFile"
+
+  /projects/{projectId}/files/{fileId}:
+    delete:
+      operationId: deleteFile
+      tags: [files]
+      summary: Delete a file
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: fileId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: File deleted
+
+  # Chat Messages
+  /projects/{projectId}/messages:
+    get:
+      operationId: listMessages
+      tags: [messages]
+      summary: List chat messages for a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: before
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send a chat message
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageBody"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+
+  # Activity Log
+  /projects/{projectId}/activity:
+    get:
+      operationId: listActivity
+      tags: [activity]
+      summary: Get activity log for a project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Activity log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityLog"
+
+  # Analytics / Dashboard
+  /analytics/platform:
+    get:
+      operationId: getPlatformStats
+      tags: [analytics]
+      summary: Get platform-wide statistics (admin)
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+
+  /analytics/dashboard:
+    get:
+      operationId: getDashboardSummary
+      tags: [analytics]
+      summary: Get current user dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /analytics/projects/{projectId}/stats:
+    get:
+      operationId: getProjectStats
+      tags: [analytics]
+      summary: Get stats for a specific project
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    # Auth
+    SignupBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        institution:
+          type: ["string", "null"]
+        researchInterests:
+          type: ["string", "null"]
+      required:
+        - name
+        - email
+        - password
+
+    SigninBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    # User
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        institution:
+          type: ["string", "null"]
+        researchInterests:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        image:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - role
+        - createdAt
+        - updatedAt
+
+    UpdateUserBody:
+      type: object
+      properties:
+        name:
+          type: string
+        institution:
+          type: ["string", "null"]
+        researchInterests:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        image:
+          type: ["string", "null"]
+
+    UpdateUserRoleBody:
+      type: object
+      properties:
+        role:
+          type: string
+      required:
+        - role
+
+    ChangePasswordBody:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+      required:
+        - currentPassword
+        - newPassword
+
+    # Project
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        abstract:
+          type: ["string", "null"]
+        keywords:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        visibility:
+          type: string
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        memberCount:
+          type: integer
+        currentUserRole:
+          type: ["string", "null"]
+      required:
+        - id
+        - title
+        - description
+        - keywords
+        - status
+        - visibility
+        - createdAt
+        - updatedAt
+        - memberCount
+
+    ProjectSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        visibility:
+          type: string
+        memberCount:
+          type: integer
+        taskCount:
+          type: integer
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        currentUserRole:
+          type: ["string", "null"]
+      required:
+        - id
+        - title
+        - description
+        - keywords
+        - status
+        - visibility
+        - memberCount
+        - taskCount
+        - createdAt
+        - updatedAt
+
+    CreateProjectBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        abstract:
+          type: ["string", "null"]
+        keywords:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        visibility:
+          type: string
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+      required:
+        - title
+        - description
+        - keywords
+        - status
+        - visibility
+
+    UpdateProjectBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        abstract:
+          type: ["string", "null"]
+        keywords:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        visibility:
+          type: string
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+
+    # Members
+    ProjectMember:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        projectId:
+          type: string
+        role:
+          type: string
+        joinedAt:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - userId
+        - projectId
+        - role
+        - joinedAt
+        - user
+
+    UpdateMemberBody:
+      type: object
+      properties:
+        role:
+          type: string
+      required:
+        - role
+
+    # Invitations
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        projectId:
+          type: string
+        invitedById:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+        project:
+          $ref: "#/components/schemas/ProjectSummary"
+        invitedBy:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - email
+        - projectId
+        - invitedById
+        - status
+        - createdAt
+        - project
+        - invitedBy
+
+    CreateInvitationBody:
+      type: object
+      properties:
+        email:
+          type: string
+      required:
+        - email
+
+    # Tasks
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+        assignedToId:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+        assignedTo:
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+      required:
+        - id
+        - projectId
+        - title
+        - status
+
+    CreateTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+        assignedToId:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+      required:
+        - title
+        - status
+
+    UpdateTaskBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+        assignedToId:
+          type: ["string", "null"]
+        dueDate:
+          type: ["string", "null"]
+
+    # Milestones
+    Milestone:
+      type: object
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        title:
+          type: string
+        dueDate:
+          type: string
+        completed:
+          type: boolean
+      required:
+        - id
+        - projectId
+        - title
+        - dueDate
+        - completed
+
+    CreateMilestoneBody:
+      type: object
+      properties:
+        title:
+          type: string
+        dueDate:
+          type: string
+      required:
+        - title
+        - dueDate
+
+    UpdateMilestoneBody:
+      type: object
+      properties:
+        title:
+          type: string
+        dueDate:
+          type: string
+        completed:
+          type: boolean
+
+    # Files
+    ProjectFile:
+      type: object
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        filename:
+          type: string
+        fileUrl:
+          type: string
+        uploadedById:
+          type: string
+        uploadedAt:
+          type: string
+        uploadedBy:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - projectId
+        - filename
+        - fileUrl
+        - uploadedById
+        - uploadedAt
+        - uploadedBy
+
+    UploadFileBody:
+      type: object
+      properties:
+        filename:
+          type: string
+        fileUrl:
+          type: string
+      required:
+        - filename
+        - fileUrl
+
+    # Chat
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        userId:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - projectId
+        - userId
+        - message
+        - createdAt
+        - user
+
+    SendMessageBody:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    # Activity Log
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: string
+        projectId:
+          type: string
+        userId:
+          type: string
+        action:
+          type: string
+        details:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - id
+        - projectId
+        - userId
+        - action
+        - createdAt
+        - user
+
+    # Analytics
+    PlatformStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalProjects:
+          type: integer
+        activeProjects:
+          type: integer
+        completedProjects:
+          type: integer
+        draftProjects:
+          type: integer
+        publicProjects:
+          type: integer
+        totalMessages:
+          type: integer
+        totalFiles:
+          type: integer
+        recentSignups:
+          type: integer
+      required:
+        - totalUsers
+        - totalProjects
+        - activeProjects
+        - completedProjects
+        - draftProjects
+        - publicProjects
+        - totalMessages
+        - totalFiles
+        - recentSignups
+
+    DashboardSummary:
+      type: object
+      properties:
+        myProjectCount:
+          type: integer
+        collaboratingCount:
+          type: integer
+        pendingInvitations:
+          type: integer
+        recentProjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectSummary"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityLog"
+      required:
+        - myProjectCount
+        - collaboratingCount
+        - pendingInvitations
+        - recentProjects
+        - recentActivity
+
+    ProjectStats:
+      type: object
+      properties:
+        totalTasks:
+          type: integer
+        completedTasks:
+          type: integer
+        inProgressTasks:
+          type: integer
+        todoTasks:
+          type: integer
+        totalMilestones:
+          type: integer
+        completedMilestones:
+          type: integer
+        memberCount:
+          type: integer
+        fileCount:
+          type: integer
+        messageCount:
+          type: integer
+      required:
+        - totalTasks
+        - completedTasks
+        - inProgressTasks
+        - todoTasks
+        - totalMilestones
+        - completedMilestones
+        - memberCount
+        - fileCount
+        - messageCount
