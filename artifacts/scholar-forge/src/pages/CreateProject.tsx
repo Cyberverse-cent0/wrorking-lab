@@ -105,10 +105,11 @@ export default function CreateProject() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="DRAFT">Draft</SelectItem>
                     <SelectItem value="PLANNING">Planning</SelectItem>
-                    <SelectItem value="ACTIVE">Active</SelectItem>
-                    <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                    <SelectItem value="ONGOING">Ongoing</SelectItem>
                     <SelectItem value="COMPLETED">Completed</SelectItem>
+                    <SelectItem value="SEEKING_COLLABORATORS">Seeking Collaborators</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -122,7 +123,7 @@ export default function CreateProject() {
                   <SelectContent>
                     <SelectItem value="PUBLIC">Public</SelectItem>
                     <SelectItem value="PRIVATE">Private</SelectItem>
-                    <SelectItem value="INSTITUTION">Institution</SelectItem>
+                    <SelectItem value="INVITE_ONLY">Invite Only</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

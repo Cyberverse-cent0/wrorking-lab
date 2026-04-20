@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppLayout } from "@/components/AppLayout";
+import ProfilePopup from "@/components/ProfilePopup";
 import NotFound from "@/pages/not-found";
 import SignIn from "@/pages/auth/SignIn";
 import SignUp from "@/pages/auth/SignUp";
@@ -92,6 +93,7 @@ function App() {
             <Router />
           </WouterRouter>
           <Toaster />
+          <ProfilePopup />
         </TooltipProvider>
       </AuthProvider>
     </ThemeProvider>

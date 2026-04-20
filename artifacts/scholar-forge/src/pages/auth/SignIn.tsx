@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { BookOpen, Eye, EyeOff } from "lucide-react";
+import { BookOpen, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,18 +20,54 @@ export default function SignIn() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    
+    // Basic validation
+    if (!email.trim()) {
+      setError("Email is required");
+      setLoading(false);
+      return;
+    }
+    if (!password.trim()) {
+      setError("Password is required");
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const res = await fetch("/api/auth/signin", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${apiUrl}/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
+      
+      // Handle non-JSON responses
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Sign in failed");
+      if (!res.ok) {
+        throw new Error(data.error || data.message || "Sign in failed");
+      }
+      
+      if (!data.token || !data.user) {
+        throw new Error("Invalid response from server");
+      }
+      
       login(data.token, data.user);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message);
+      console.error("Sign in error:", err);
+      if (err.name === "TypeError" && err.message.includes("fetch")) {
+        setError("Unable to connect to server. Please check your internet connection.");
+      } else if (err.message.includes("Failed to fetch")) {
+        setError("Server is not responding. Please try again later.");
+      } else {
+        setError(err.message || "An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -54,8 +90,9 @@ export default function SignIn() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                  {error}
+                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
               <div className="space-y-1.5">
@@ -103,8 +140,8 @@ export default function SignIn() {
               </a>
             </div>
             <div className="mt-4 p-3 bg-muted/50 rounded-md text-xs text-muted-foreground">
-              <strong>Demo credentials:</strong><br />
-              admin@scholarforge.io / password123
+              <strong>First user setup:</strong><br />
+              Create your account - the first user gets admin privileges
             </div>
           </CardContent>
         </Card>

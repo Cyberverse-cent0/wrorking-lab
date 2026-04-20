@@ -17,7 +17,7 @@ export function verifyPassword(password: string, hash: string): boolean {
 }
 
 export function generateToken(userId: string): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "10m" });
 }
 
 export function verifyToken(token: string): { userId: string } | null {

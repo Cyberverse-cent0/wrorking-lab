@@ -21,6 +21,9 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Check if user can create projects
+  const canCreateProject = user && ["SCHOLAR", "ORGANIZATION", "ADMIN"].includes(user.role);
+
   const isActive = (to: string) => {
     const path = to.split("?")[0];
     return location === path || (path !== "/" && location.startsWith(path));
@@ -43,20 +46,22 @@ export function Sidebar() {
       <Separator className="bg-sidebar-border" />
 
       {/* Create Button */}
-      <div className={cn("px-3 py-3", collapsed && "px-2")}>
-        <Link to="/projects/create" onClick={() => setMobileOpen(false)}>
-          <Button
-            className={cn(
-              "w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 gap-2",
-              collapsed && "px-2"
-            )}
-            data-testid="button-create-project"
-          >
-            <Plus className="w-4 h-4 flex-shrink-0" />
-            {!collapsed && <span>New Project</span>}
-          </Button>
-        </Link>
-      </div>
+      {canCreateProject && (
+        <div className={cn("px-3 py-3", collapsed && "px-2")}>
+          <Link to="/projects/create" onClick={() => setMobileOpen(false)}>
+            <Button
+              className={cn(
+                "w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 gap-2",
+                collapsed && "px-2"
+              )}
+              data-testid="button-create-project"
+            >
+              <Plus className="w-4 h-4 flex-shrink-0" />
+              {!collapsed && <span>New Project</span>}
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-2 space-y-1 overflow-y-auto">

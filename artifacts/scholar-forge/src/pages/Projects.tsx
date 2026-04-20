@@ -28,13 +28,14 @@ interface Project {
 }
 
 export default function Projects() {
+  const { user } = useAuth();
   const [location] = useLocation();
   const params = new URLSearchParams(location.includes("?") ? location.split("?")[1] : "");
   const initialMine = params.get("myProjects") === "true";
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
-  const [myProjects, setMyProjects] = useState(initialMine);
+  const [myProjects, setMyProjects] = useState(false); // Default to showing all projects for logged-in users
 
   const queryParams = new URLSearchParams();
   if (search) queryParams.set("search", search);
@@ -46,6 +47,9 @@ export default function Projects() {
     [search, status, myProjects]
   );
 
+  // Check if user can create projects
+  const canCreateProject = user && ["SCHOLAR", "ORGANIZATION", "ADMIN"].includes(user.role);
+
   return (
     <div className="space-y-5 max-w-6xl mx-auto">
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -53,11 +57,13 @@ export default function Projects() {
           <h1 className="text-2xl font-serif font-semibold text-foreground">Research Projects</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Discover and manage collaborative research</p>
         </div>
-        <Link to="/projects/create">
-          <Button className="gap-2" data-testid="button-new-project">
-            <Plus className="w-4 h-4" /> New Project
-          </Button>
-        </Link>
+        {canCreateProject && (
+          <Link to="/projects/create">
+            <Button className="gap-2" data-testid="button-new-project">
+              <Plus className="w-4 h-4" /> New Project
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

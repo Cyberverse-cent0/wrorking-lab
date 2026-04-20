@@ -97,6 +97,12 @@ router.post("/projects", requireAuth, async (req, res): Promise<void> => {
   const user = getCurrentUser(req);
   const { title, description, abstract, keywords, status, visibility, startDate, endDate } = req.body;
 
+  // Check if user has permission to create projects (SCHOLAR, ORGANIZATION, or ADMIN only)
+  if (!["SCHOLAR", "ORGANIZATION", "ADMIN"].includes(user.role)) {
+    res.status(403).json({ error: "Only scholars, organizations, and admins can create projects" });
+    return;
+  }
+
   if (!title || !description) {
     res.status(400).json({ error: "Title and description are required" });
     return;

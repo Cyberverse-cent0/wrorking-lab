@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { BookOpen, Eye, EyeOff } from "lucide-react";
+import { BookOpen, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,18 +22,82 @@ export default function SignUp() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    
+    // Basic validation
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedName) {
+      setError("Full name is required");
+      setLoading(false);
+      return;
+    }
+    if (trimmedName.length < 2) {
+      setError("Name must be at least 2 characters long");
+      setLoading(false);
+      return;
+    }
+    if (!trimmedEmail) {
+      setError("Email is required");
+      setLoading(false);
+      return;
+    }
+    if (!trimmedEmail.includes("@") || !trimmedEmail.includes(".")) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+    if (!password) {
+      setError("Password is required");
+      setLoading(false);
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setLoading(false);
+      return;
+    }
+    
     try {
-      const res = await fetch("/api/auth/signup", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${apiUrl}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, institution }),
+        body: JSON.stringify({ 
+          name: trimmedName, 
+          email: trimmedEmail, 
+          password, 
+          institution: institution.trim() || null 
+        }),
       });
+      
+      // Handle non-JSON responses
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await res.text();
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Sign up failed");
+      if (!res.ok) {
+        throw new Error(data.error || data.message || "Sign up failed");
+      }
+      
+      if (!data.token || !data.user) {
+        throw new Error("Invalid response from server");
+      }
+      
       login(data.token, data.user);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message);
+      console.error("Sign up error:", err);
+      if (err.name === "TypeError" && err.message.includes("fetch")) {
+        setError("Unable to connect to server. Please check your internet connection.");
+      } else if (err.message.includes("Failed to fetch")) {
+        setError("Server is not responding. Please try again later.");
+      } else {
+        setError(err.message || "An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -56,8 +120,9 @@ export default function SignUp() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                  {error}
+                <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
               <div className="space-y-1.5">

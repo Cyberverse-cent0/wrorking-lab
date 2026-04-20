@@ -20,9 +20,11 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
+  showProfilePopup: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
   updateUser: (user: User) => void;
+  setShowProfilePopup: (show: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -31,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem(TOKEN_KEY);
@@ -57,6 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(TOKEN_KEY, newToken);
     setToken(newToken);
     setUser(newUser);
+    // Show profile popup for new users or users with incomplete profiles
+    const needsProfileUpdate = !newUser.institution || !newUser.bio || !newUser.researchInterests || !newUser.image;
+    setShowProfilePopup(needsProfileUpdate);
   };
 
   const logout = () => {
@@ -70,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, showProfilePopup, login, logout, updateUser, setShowProfilePopup }}>
       {children}
     </AuthContext.Provider>
   );

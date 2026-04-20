@@ -8,14 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { formatRelative, getStatusColor } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface DashboardStats {
-  totalProjects: number;
-  activeProjects: number;
-  totalMembers: number;
-  totalTasks: number;
-  completedTasks: number;
-  upcomingMilestones: number;
-}
 
 interface Project {
   id: string;
@@ -38,16 +30,8 @@ interface Activity {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { data: stats, loading: statsLoading } = useQuery<DashboardStats>("/api/analytics/overview");
   const { data: projects, loading: projectsLoading } = useQuery<Project[]>("/api/projects?myProjects=true&limit=5");
   const { data: activityRaw, loading: activityLoading } = useQuery<any>("/api/analytics/dashboard");
-
-  const statItems = [
-    { label: "Active Projects", value: stats?.activeProjects ?? 0, icon: FolderOpen, color: "text-blue-600 dark:text-blue-400" },
-    { label: "Total Collaborators", value: stats?.totalMembers ?? 0, icon: Users, color: "text-green-600 dark:text-green-400" },
-    { label: "Tasks Completed", value: stats?.completedTasks ?? 0, suffix: `/ ${stats?.totalTasks ?? 0}`, icon: CheckSquare, color: "text-purple-600 dark:text-purple-400" },
-    { label: "Upcoming Milestones", value: stats?.upcomingMilestones ?? 0, icon: Target, color: "text-orange-600 dark:text-orange-400" },
-  ];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -61,34 +45,7 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statItems.map((stat) => (
-          <Card key={stat.label} className="border-border">
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{stat.label}</p>
-                  <div className="mt-1.5 flex items-baseline gap-1">
-                    {statsLoading ? (
-                      <Skeleton className="h-7 w-12" />
-                    ) : (
-                      <>
-                        <span className="text-2xl font-bold text-foreground">{stat.value}</span>
-                        {stat.suffix && <span className="text-sm text-muted-foreground">{stat.suffix}</span>}
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className={`p-2 bg-current/10 rounded-lg ${stat.color}`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Projects */}
         <Card className="border-border">

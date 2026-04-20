@@ -46,11 +46,9 @@ ScholarForge is a research collaboration platform where scholars create and mana
 - Analytics: `/api/analytics/overview`, `/api/analytics/dashboard`, `/api/analytics/admin`
 - Admin: `/api/admin/users`, `/api/admin/projects`
 
-## Demo Credentials
+## Demo Setup
 
-- Admin: `admin@scholarforge.io` / `password123`
-- Researcher: `marcus@scholarforge.io` / `password123`
-- Researcher: `aisha@scholarforge.io` / `password123`
+For testing purposes, create your own account using the signup functionality. The first user created will automatically receive ADMIN privileges.
 
 ## Key Commands
 
